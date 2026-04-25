@@ -1,11 +1,36 @@
-// app/design/nature/page.tsx
-
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function NaturePage() {
   const [rsvpStatus, setRsvpStatus] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+
+  const handlePurchase = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/payment/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ theme: 'nature' })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        // Redirect to Netopia payment
+        window.location.href = data.paymentUrl
+      } else {
+        alert(data.error || 'Payment creation failed')
+      }
+    } catch (error) {
+      alert('Network error')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
@@ -53,12 +78,13 @@ export default function NaturePage() {
 
       {/* Buton Principal */}
       <section className="py-12 px-6 text-center">
-        <a
-          href="/login"
-          className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+        <button
+          onClick={handlePurchase}
+          disabled={loading}
+          className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50"
         >
-          Alege această temă
-        </a>
+          {loading ? 'Se procesează...' : 'Cumpără acum - 300 RON'}
+        </button>
       </section>
 
       {/* Demo Live Invitație */}
